@@ -3,11 +3,15 @@ import 'package:kite/multi_provider/multi_app_provider.dart';
 import 'package:kite/splash_screen/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:camera/camera.dart';
+
+List<CameraDescription> cameras = [];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  cameras = await availableCameras();
 
   runApp(AppProviders.init(child: const MyApp()));
 }
@@ -19,7 +23,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(fontFamily: 'SF Pro Rounded'),
       home: const SplashScreen(),
     );
   }

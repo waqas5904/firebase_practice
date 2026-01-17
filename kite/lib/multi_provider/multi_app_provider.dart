@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kite/providers/custom_phone_provider.dart';
 import 'package:kite/providers/otp_provider.dart';
+import 'package:kite/providers/email_auth_provider.dart';
 import 'package:kite/providers/splash_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +12,9 @@ class AppProviders {
       create: (_) => PhoneFieldProvider(),
     ),
     ChangeNotifierProvider<OTPProvider>(create: (_) => OTPProvider()),
+    ChangeNotifierProvider<EmailAuthProvider>(
+      create: (_) => EmailAuthProvider(),
+    ),
   ];
 
   static Widget init({required Widget child}) {

@@ -8,14 +8,21 @@ class OTPProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String _otpCode = '';
   String? _verificationId;
+  String? _phoneNumber;
   bool _isLoading = false;
 
   String get otpCode => _otpCode;
+  String? get phoneNumber => _phoneNumber;
   bool get isLoading => _isLoading;
   bool get isOTPComplete => _otpCode.length == 6;
 
   void setVerificationId(String id) {
     _verificationId = id;
+    notifyListeners();
+  }
+
+  void setPhoneNumber(String phone) {
+    _phoneNumber = phone;
     notifyListeners();
   }
 

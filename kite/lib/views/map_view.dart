@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:kite/main.dart';
 import 'package:kite/providers/map_provider.dart';
+import 'package:kite/views/camera_view.dart';
 import 'package:provider/provider.dart';
 
-class MapView extends StatelessWidget {
+class MapView extends StatefulWidget {
   const MapView({super.key});
+
+  @override
+  State<MapView> createState() => _MapViewState();
+}
+
+class _MapViewState extends State<MapView> {
+  final TextEditingController _searchController = TextEditingController();
 
   static const String _mapStyle = '''
 [
@@ -30,9 +39,13 @@ class MapView extends StatelessWidget {
 ''';
 
   @override
-  Widget build(BuildContext context) {
-    final searchController = TextEditingController();
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => MapProvider(),
       child: Scaffold(
@@ -94,7 +107,10 @@ class MapView extends StatelessWidget {
                       ],
                     ),
                     child: TextField(
-                      controller: searchController,
+                      controller: _searchController,
+                      onChanged: (value) {
+                        provider.getPlaceSuggestions(value);
+                      },
                       decoration: InputDecoration(
                         hintText: "Search location (e.g. Gurumandir)",
                         prefixIcon: const Icon(
@@ -103,7 +119,8 @@ class MapView extends StatelessWidget {
                         ),
                         suffixIcon: IconButton(
                           onPressed: () {
-                            provider.searchLocation(searchController.text);
+                            provider.searchLocation(_searchController.text);
+                            provider.clearSuggestions();
                             FocusScope.of(context).unfocus();
                           },
                           icon: const Icon(
@@ -118,12 +135,63 @@ class MapView extends StatelessWidget {
                       ),
                       onSubmitted: (value) {
                         provider.searchLocation(value);
+                        provider.clearSuggestions();
                       },
                     ),
                   ),
                 ),
 
-                // 3. Navigation Card (Purple) - Integrated with Dynamic Data
+                // Suggestions List
+                if (provider.suggestions.isNotEmpty)
+                  Positioned(
+                    top: 115,
+                    left: 20,
+                    right: 20,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 300),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: provider.suggestions.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final suggestion = provider.suggestions[index];
+                          return ListTile(
+                            leading: const Icon(
+                              Icons.location_on_outlined,
+                              color: Color(0xFF7B61FF),
+                            ),
+                            title: Text(
+                              suggestion['description'],
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            onTap: () {
+                              _searchController.text =
+                                  suggestion['description'];
+                              provider.searchLocation(
+                                suggestion['description'],
+                              );
+                              provider.clearSuggestions();
+                              FocusScope.of(context).unfocus();
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
                 Positioned(
                   bottom: 110,
                   left: 20,
@@ -134,18 +202,10 @@ class MapView extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFF7B61FF),
                       borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF7B61FF).withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
                     ),
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        // Dynamic Image of the Place
                         ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: CachedNetworkImageSim(
@@ -155,7 +215,6 @@ class MapView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        // Details
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,11 +285,72 @@ class MapView extends StatelessWidget {
                   right: 20,
                   child: Row(
                     children: [
-                      _buildPillButton(
-                        icon: Icons.my_location,
-                        onTap: () {
-                          // Already handled by GoogleMap myLocationEnabled, but can zoom
-                        },
+                      Container(
+                        height: 60,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                if (provider.currentPosition != null &&
+                                    provider.mapController != null) {
+                                  provider.mapController!.animateCamera(
+                                    CameraUpdate.newLatLngZoom(
+                                      provider.currentPosition!,
+                                      15,
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: Image.asset(
+                                'assets/icons/location.png',
+                                height: 26,
+                                width: 26,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 30,
+                              color: Colors.grey[200],
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                if (cameras.isNotEmpty) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CameraView(cameras: cameras),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("No cameras found"),
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: Image.asset(
+                                'assets/icons/camera.png',
+                                height: 26,
+                                width: 26,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const Spacer(),
                       _buildCloseButton(context),
@@ -242,28 +362,6 @@ class MapView extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildPillButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      height: 64,
-      width: 64,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Icon(icon, color: const Color(0xFF7B61FF)),
     );
   }
 

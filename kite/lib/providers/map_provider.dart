@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -21,8 +23,10 @@ class MapProvider extends ChangeNotifier {
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
   List<LatLng> _polylineCoordinates = [];
+  List<dynamic> _suggestions = [];
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionStream;
+  Timer? _debounce;
 
   LatLng? get currentPosition => _currentPosition;
   LatLng? get destinationPosition => _destinationPosition;
@@ -32,6 +36,8 @@ class MapProvider extends ChangeNotifier {
   String get placeImage => _placeImage;
   Set<Marker> get markers => _markers;
   Set<Polyline> get polylines => _polylines;
+  List<dynamic> get suggestions => _suggestions;
+  GoogleMapController? get mapController => _mapController;
 
   MapProvider() {
     _initLocation();
@@ -83,6 +89,39 @@ class MapProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> getPlaceSuggestions(String query) async {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+
+    if (query.isEmpty) {
+      _suggestions = [];
+      notifyListeners();
+      return;
+    }
+
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      try {
+        final String url =
+            "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$_googleApiKey";
+        final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['status'] == 'OK') {
+            _suggestions = data['predictions'];
+            notifyListeners();
+          }
+        }
+      } catch (e) {
+        debugPrint("Suggestions error: $e");
+      }
+    });
+  }
+
+  void clearSuggestions() {
+    _suggestions = [];
+    notifyListeners();
+  }
+
   Future<void> searchLocation(String query) async {
     try {
       List<Location> locations = await locationFromAddress(query);
@@ -115,9 +154,37 @@ class MapProvider extends ChangeNotifier {
       _address = "Custom Location";
     }
 
-    // Dynamic Image based on address keywords
-    _placeImage =
-        "https://source.unsplash.com/featured/?road,building,${_address.split(',').first}";
+    // Fetch Real Place Photo from Google Places API
+    try {
+      final String nearbyUrl =
+          "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${tappedPoint.latitude},${tappedPoint.longitude}&radius=50&key=$_googleApiKey";
+      final response = await http.get(Uri.parse(nearbyUrl));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['results'] != null && data['results'].isNotEmpty) {
+          final firstPlace = data['results'][0];
+          if (firstPlace['photos'] != null && firstPlace['photos'].isNotEmpty) {
+            final photoRef = firstPlace['photos'][0]['photo_reference'];
+            _placeImage =
+                "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoRef&key=$_googleApiKey";
+
+            // Optionally update address to the specific place name found
+            if (firstPlace['name'] != null) {
+              _address = firstPlace['name'];
+            }
+          } else {
+            // Fallback if no photo
+            _placeImage =
+                "https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=2047";
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Photo fetch error: $e");
+      _placeImage =
+          "https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=2047";
+    }
 
     await _getRoadRoute();
     _calculateStats();

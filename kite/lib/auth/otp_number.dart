@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kite/providers/otp_provider.dart';
+import 'package:kite/utils/app_colors.dart';
 import 'package:kite/views/map_view.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
@@ -28,34 +29,32 @@ class OTPView extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomLeft,
+            colors: [AppColors.primary, AppColors.secondary],
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              const Text(
-                "Verify Phone",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 25),
+              Icon(Icons.arrow_back_ios_new, color: Colors.white),
+              const SizedBox(height: 100),
               Text(
-                "Enter the 6-digit code we sent to your number",
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+                "Enter the 6-digit code sent to your phone number${provider.phoneNumber} ",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: "SF Pro Rounded",
+                ),
               ),
               const SizedBox(height: 40),
 
@@ -76,12 +75,12 @@ class OTPView extends StatelessWidget {
                     width: 56,
                     height: 56,
                     textStyle: const TextStyle(
+                      color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
                   ),
@@ -93,33 +92,82 @@ class OTPView extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: Colors.blue, width: 2),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
+              Center(
+                child: Text(
+                  "Full code is need to activate",
+                  style: TextStyle(
+                    color: Color(0xFFB4FFC0),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                    fontFamily: "SF Pro Rounded",
+                  ),
+                ),
+              ),
 
               // Loading or Help Text
               Center(
                 child: provider.isLoading
                     ? const CircularProgressIndicator()
                     : TextButton(
-                        onPressed: () {
-                          // Resend logic if needed
-                        },
-                        child: const Text(
-                          "Resend Code",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        onPressed: () {},
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Didn’t receive code? ",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "SF Pro Rounded",
+                                color: Colors.white,
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                Text(
+                                  "Resend",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "SF Pro Rounded",
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                Container(
+                                  height: 2,
+                                  width: 50,
+                                  color: Colors.blue,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
               ),
+              Spacer(),
+              Center(
+                child: Text(
+                  "By providing your phone number, you agree Marsh Tech may send you texts with notifications and security codes",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: "SF Pro Rounded",
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
             ],
           ),
         ),
