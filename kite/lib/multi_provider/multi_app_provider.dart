@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kite/providers/custom_phone_provider.dart';
+import 'package:kite/providers/otp_provider.dart';
 import 'package:kite/providers/splash_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +10,7 @@ class AppProviders {
     ChangeNotifierProvider<PhoneFieldProvider>(
       create: (_) => PhoneFieldProvider(),
     ),
-    // yahan baaki providers add kar sakte ho
+    ChangeNotifierProvider<OTPProvider>(create: (_) => OTPProvider()),
   ];
 
   static Widget init({required Widget child}) {
