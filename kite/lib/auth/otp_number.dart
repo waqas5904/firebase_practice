@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kite/home_screen.dart';
 import 'package:kite/providers/otp_provider.dart';
+import 'package:kite/views/map_view.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 
@@ -9,42 +9,14 @@ class OTPView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<OTPProvider>();
-
-    final defaultPinTheme = PinTheme(
-      width: 56,
-      height: 56,
-      textStyle: const TextStyle(
-        fontSize: 22,
-        color: Colors.black,
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-    );
-
-    final focusedPinTheme = defaultPinTheme.copyWith(
-      decoration: defaultPinTheme.decoration!.copyWith(
-        border: Border.all(color: Colors.blue, width: 2),
-      ),
-    );
-
-    final submittedPinTheme = defaultPinTheme.copyWith(
-      decoration: defaultPinTheme.decoration!.copyWith(
-        color: Colors.blue.shade50,
-        border: Border.all(color: Colors.blue),
-      ),
-    );
+    final provider = Provider.of<OTPProvider>(context);
 
     void handleVerification() {
       provider.verifyOTP(
         onSuccess: () {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MapView()),
           );
         },
         onError: (error) {
@@ -66,82 +38,82 @@ class OTPView extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 20),
               const Text(
-                'OTP Verification',
+                "Verify Phone",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
-                'Enter the 4-digit code sent to your phone',
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                "Enter the 6-digit code we sent to your number",
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
               const SizedBox(height: 40),
+
+              // OTP Input
+              Center(
+                child: Pinput(
+                  length: 6,
+                  onCompleted: (pin) {
+                    provider.setOTP(pin);
+                    handleVerification();
+                  },
+                  defaultPinTheme: PinTheme(
+                    width: 56,
+                    height: 56,
+                    textStyle: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                  ),
+                  focusedPinTheme: PinTheme(
+                    width: 56,
+                    height: 56,
+                    textStyle: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue, width: 2),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Loading or Help Text
               Center(
                 child: provider.isLoading
                     ? const CircularProgressIndicator()
-                    : Pinput(
-                        controller: provider.pinController,
-                        focusNode: provider.focusNode,
-                        length: 6, // Firebase normally sends 6 digits
-                        defaultPinTheme: defaultPinTheme,
-                        focusedPinTheme: focusedPinTheme,
-                        submittedPinTheme: submittedPinTheme,
-                        showCursor: true,
-                        onChanged: (value) => provider.updateOTP(value),
-                        onCompleted: (pin) {
-                          handleVerification();
+                    : TextButton(
+                        onPressed: () {
+                          // Resend logic if needed
                         },
+                        child: const Text(
+                          "Resend Code",
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-              ),
-              const SizedBox(height: 30),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    // Resend OTP logic can be added here
-                  },
-                  child: Text(
-                    "Didn't receive code? Resend",
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: provider.isOTPComplete && !provider.isLoading
-                      ? () => handleVerification()
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Verify',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

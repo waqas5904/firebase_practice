@@ -5,12 +5,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // async ka prerequisite
+  WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase initialize karna
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // App run karna with MultiProvider
   runApp(AppProviders.init(child: const MyApp()));
 }
 

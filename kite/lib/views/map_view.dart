@@ -31,9 +31,12 @@ class MapView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final searchController = TextEditingController();
+
     return ChangeNotifierProvider(
       create: (_) => MapProvider(),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Consumer<MapProvider>(
           builder: (context, provider, child) {
             if (provider.currentPosition == null) {
@@ -41,9 +44,9 @@ class MapView extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
+                    CircularProgressIndicator(color: Color(0xFF7B61FF)),
                     SizedBox(height: 16),
-                    Text("Getting your location..."),
+                    Text("Initializing Professional Map..."),
                   ],
                 ),
               );
@@ -73,42 +76,60 @@ class MapView extends StatelessWidget {
                   compassEnabled: false,
                 ),
 
-                // 2. Custom Floating Marker Label
-                if (provider.destinationPosition != null)
-                  Positioned(
-                    top: 100,
-                    left: 20,
-                    right: 20,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
+                // 2. SEARCH BAR (Professional)
+                Positioned(
+                  top: 50,
+                  left: 20,
+                  right: 20,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 10),
-                          ],
+                      ],
+                    ),
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: "Search location (e.g. Gurumandir)",
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF7B61FF),
                         ),
-                        child: const Text(
-                          "Destination Selected",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            provider.searchLocation(searchController.text);
+                            FocusScope.of(context).unfocus();
+                          },
+                          icon: const Icon(
+                            Icons.send,
                             color: Color(0xFF7B61FF),
                           ),
                         ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                        ),
                       ),
+                      onSubmitted: (value) {
+                        provider.searchLocation(value);
+                      },
                     ),
                   ),
+                ),
 
-                // 3. Navigation Card (Purple)
+                // 3. Navigation Card (Purple) - Integrated with Dynamic Data
                 Positioned(
                   bottom: 110,
                   left: 20,
                   right: 20,
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
                     height: 160,
                     decoration: BoxDecoration(
                       color: const Color(0xFF7B61FF),
@@ -124,21 +145,17 @@ class MapView extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        // Left Image (Dynamic)
-                        Hero(
-                          tag: 'location_img',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
-                              provider.placeImage,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.cover,
-                            ),
+                        // Dynamic Image of the Place
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: CachedNetworkImageSim(
+                            imageUrl: provider.placeImage,
+                            width: 120,
+                            height: 120,
                           ),
                         ),
                         const SizedBox(width: 16),
-                        // Right Details
+                        // Details
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +165,7 @@ class MapView extends StatelessWidget {
                                 provider.instruction.toUpperCase(),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.8),
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 1.2,
                                 ),
@@ -158,7 +175,7 @@ class MapView extends StatelessWidget {
                                 provider.address,
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 maxLines: 2,
@@ -167,28 +184,28 @@ class MapView extends StatelessWidget {
                               const SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const Icon(
-                                      Icons.location_on,
+                                      Icons.timer_outlined,
                                       color: Colors.white,
                                       size: 14,
                                     ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 6),
                                     Text(
                                       provider.distance,
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
@@ -196,11 +213,6 @@ class MapView extends StatelessWidget {
                               ),
                             ],
                           ),
-                        ),
-                        Icon(
-                          Icons.directions_car,
-                          color: Colors.white.withOpacity(0.5),
-                          size: 40,
                         ),
                       ],
                     ),
@@ -214,54 +226,14 @@ class MapView extends StatelessWidget {
                   right: 20,
                   child: Row(
                     children: [
-                      Container(
-                        height: 64,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(40),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 10),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF3F2FF),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.my_location,
-                                color: Color(0xFF7B61FF),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Icon(Icons.layers, color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                      _buildPillButton(
+                        icon: Icons.my_location,
+                        onTap: () {
+                          // Already handled by GoogleMap myLocationEnabled, but can zoom
+                        },
                       ),
                       const Spacer(),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          height: 64,
-                          width: 120,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2D2D2D),
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                      ),
+                      _buildCloseButton(context),
                     ],
                   ),
                 ),
@@ -270,6 +242,85 @@ class MapView extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildPillButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      height: 64,
+      width: 64,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Icon(icon, color: const Color(0xFF7B61FF)),
+    );
+  }
+
+  Widget _buildCloseButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Container(
+        height: 64,
+        width: 120,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(40),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.close, color: Colors.white, size: 32),
+      ),
+    );
+  }
+}
+
+// Simulated Cached Image for performance and dynamic look
+class CachedNetworkImageSim extends StatelessWidget {
+  final String imageUrl;
+  final double width;
+  final double height;
+
+  const CachedNetworkImageSim({
+    super.key,
+    required this.imageUrl,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.network(
+      imageUrl,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: Colors.grey[300],
+        child: const Icon(Icons.image, color: Colors.white),
+      ),
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Colors.grey[200],
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      },
     );
   }
 }

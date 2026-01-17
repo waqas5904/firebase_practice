@@ -19,7 +19,7 @@ class OTPProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateOTP(String value) {
+  void setOTP(String value) {
     _otpCode = value;
     notifyListeners();
   }
