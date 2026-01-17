@@ -20,14 +20,14 @@ class CustomPhoneField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
 
   const CustomPhoneField({
-    Key? key,
+    super.key,
     this.hintText = 'Enter Mobile Number',
     this.labelText,
     this.countryCodes = const ['+1', '+92', '+44', '+91', '+61'],
     this.borderColor,
     this.focusedBorderColor,
     this.fillColor,
-    this.borderRadius = 8.0,
+    this.borderRadius = 16.0,
     this.contentPadding,
     this.hintStyle,
     this.textStyle,
@@ -35,7 +35,7 @@ class CustomPhoneField extends StatelessWidget {
     this.maxLength = 10,
     this.enabled = true,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   void _showCountryCodePicker(
     BuildContext context,
@@ -103,7 +103,7 @@ class CustomPhoneField extends StatelessWidget {
     return Consumer<PhoneFieldProvider>(
       builder: (context, provider, child) {
         final borderColor = this.borderColor ?? Colors.grey.shade300;
-        final focusedBorderColor = this.focusedBorderColor ?? Colors.blue;
+
         final fillColor = this.fillColor ?? Colors.white;
 
         return Column(
@@ -124,14 +124,9 @@ class CustomPhoneField extends StatelessWidget {
               decoration: BoxDecoration(
                 color: enabled ? fillColor : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(borderRadius),
-                border: Border.all(
-                  color: provider.isFocused ? focusedBorderColor : borderColor,
-                  width: provider.isFocused ? 2 : 1,
-                ),
               ),
               child: Row(
                 children: [
-                  // Country code dropdown
                   InkWell(
                     onTap: enabled
                         ? () => _showCountryCodePicker(context, provider)
@@ -161,18 +156,11 @@ class CustomPhoneField extends StatelessWidget {
                                 countryCodeStyle ??
                                 const TextStyle(
                                   fontSize: 16,
-                                  color: Colors.black87,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.w400,
                                 ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.arrow_drop_down,
-                            color: enabled
-                                ? Colors.grey.shade600
-                                : Colors.grey.shade400,
-                            size: 24,
-                          ),
+                          const SizedBox(width: 6),
                         ],
                       ),
                     ),
@@ -197,11 +185,11 @@ class CustomPhoneField extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: hintText,
                           hintStyle:
-                              this.hintStyle ??
+                              hintStyle ??
                               TextStyle(
                                 color: Colors.grey.shade400,
                                 fontSize: 16,
-                                fontWeight: FontWeight.w400,
+                                fontWeight: FontWeight.w700,
                               ),
                           border: InputBorder.none,
                           contentPadding:
@@ -216,7 +204,8 @@ class CustomPhoneField extends StatelessWidget {
                             textStyle ??
                             const TextStyle(
                               fontSize: 16,
-                              color: Colors.black87,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
                             ),
                       ),
                     ),

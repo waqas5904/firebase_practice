@@ -10,15 +10,15 @@ class CustomButton extends StatelessWidget {
   final double width;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onTap,
     this.backgroundColor = Colors.blue,
     this.textColor = Colors.white,
-    this.borderRadius = 12.0,
+    this.borderRadius = 16.0,
     this.height = 50.0,
     this.width = double.infinity,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +30,15 @@ class CustomButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
         ),
         alignment: Alignment.center,
         child: Text(
           text,
           style: TextStyle(
             color: textColor,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            fontFamily: "SF Pro Rounded",
           ),
         ),
       ),

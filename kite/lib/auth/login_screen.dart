@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kite/auth/otp_number.dart';
 import 'package:kite/providers/custom_phone_provider.dart';
 import 'package:kite/providers/otp_provider.dart';
+import 'package:kite/utils/app_colors.dart';
 import 'package:kite/widgets/custom_button.dart';
 import 'package:kite/widgets/custom_phone_field.dart';
 import 'package:provider/provider.dart';
@@ -15,35 +16,76 @@ class LoginScreen extends StatelessWidget {
     final otpProvider = context.read<OTPProvider>();
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 60),
-              const Icon(Icons.phone_android, size: 80, color: Colors.blue),
-              const SizedBox(height: 40),
-              const Text(
-                "Welcome Back",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomLeft,
+            colors: [AppColors.primary, AppColors.secondary],
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Spacer(),
+            const Text(
+              "Welcome to",
+              style: TextStyle(
+                color: AppColors.background,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                fontFamily: "SF Pro Rounded",
               ),
-              const SizedBox(height: 10),
-              const Text(
-                "Enter your phone number to continue",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
-              CustomPhoneField(
+            ),
+            const SizedBox(height: 10),
+            Image.asset("assets/images/Stizi.png"),
+            const SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: CustomPhoneField(
+                fillColor: Color(0xFF5F0480),
                 hintText: "Enter your phone number",
                 onChanged: (value) {},
               ),
-              const SizedBox(height: 50),
-              phoneProvider.isLoading
-                  ? const CircularProgressIndicator()
-                  : CustomButton(
-                      text: "Login with Code",
+            ),
+            SizedBox(height: 10),
+            Center(
+              child: Text(
+                "Sign in with email",
+                style: TextStyle(
+                  color: Color(0xFF107CF1),
+                  fontFamily: "SF Pro Rounded",
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            Container(height: 2, width: 120, color: Color(0xFF107CF1)),
+            SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Stizi shares the same ecosystem as Sidenote, with both apps using the same login for a seamless and less annoying experience.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.background,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "SF Pro Rounded",
+                ),
+              ),
+            ),
+            Spacer(),
+            phoneProvider.isLoading
+                ? const CircularProgressIndicator()
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CustomButton(
+                      text: "Get code",
+                      textColor: Color(0xFF7B61FF),
+                      backgroundColor: Color(0xFFB4FFC0),
                       onTap: () {
                         phoneProvider.verifyPhoneNumber(
                           onCodeSent: (verificationId) {
@@ -63,8 +105,9 @@ class LoginScreen extends StatelessWidget {
                         );
                       },
                     ),
-            ],
-          ),
+                  ),
+            SizedBox(height: 20),
+          ],
         ),
       ),
     );
