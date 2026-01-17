@@ -63,6 +63,11 @@ class OTPView extends StatelessWidget {
               Center(
                 child: Pinput(
                   length: 6,
+                  controller: provider.pinController,
+                  focusNode: provider.focusNode,
+                  onChanged: (pin) {
+                    provider.setOTP(pin);
+                  },
                   onCompleted: (pin) {
                     provider.setOTP(pin);
                     handleVerification();
