@@ -38,7 +38,9 @@ class EmailAuthProvider extends ChangeNotifier {
       _sentOTP = code;
       _userEmail = email;
 
-      print("SIMULATED EMAIL OTP FOR $email: $code");
+      debugPrint("*****************************************");
+      debugPrint("SIMULATED EMAIL OTP FOR $email: $code");
+      debugPrint("*****************************************");
 
       setLoading(false);
       onCodeSent(code);

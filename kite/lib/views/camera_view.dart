@@ -40,44 +40,20 @@ class _CameraViewState extends State<CameraView> {
                 // Camera Preview
                 Positioned.fill(child: CameraPreview(_controller)),
 
-                // Overlay with Transparent Pill in Center
-                Positioned.fill(
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0.7),
-                      BlendMode.srcOut,
-                    ),
-                    child: Stack(
-                      children: [
-                        Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
-                            backgroundBlendMode: BlendMode.dstOut,
-                          ),
-                        ),
-                        Center(
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.8,
-                            width: MediaQuery.of(context).size.width * 0.65,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(200),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Pill Border for aesthetic
+                // Semi-transparent Purple Pill in Center
                 Center(
                   child: Container(
-                    height: MediaQuery.of(context).size.height * 0.8 + 12,
-                    width: MediaQuery.of(context).size.width * 0.65 + 12,
+                    height: MediaQuery.of(context).size.height * 0.8,
+                    width: MediaQuery.of(context).size.width * 0.65,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 3),
-                      borderRadius: BorderRadius.circular(210),
+                      color: const Color(
+                        0xFF7B61FF,
+                      ).withOpacity(0.3), // Transparent purple
+                      borderRadius: BorderRadius.circular(200),
+                      border: Border.all(
+                        color: const Color(0xFF7B61FF),
+                        width: 3,
+                      ),
                     ),
                   ),
                 ),

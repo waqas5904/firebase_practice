@@ -55,6 +55,8 @@ class PhoneFieldProvider extends ChangeNotifier {
           onError(e.message ?? "Verification failed");
         },
         codeSent: (String verificationId, int? resendToken) {
+          debugPrint("OTP Code sent to: $fullPhoneNumber");
+          debugPrint("Verification ID: $verificationId");
           setLoading(false);
           onCodeSent(verificationId);
         },
